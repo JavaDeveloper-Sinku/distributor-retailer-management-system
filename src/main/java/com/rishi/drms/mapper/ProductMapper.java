@@ -26,7 +26,6 @@ public final class ProductMapper {
 
     public static ProductResponse toResponse(Product product){
 
-
         return ProductResponse.builder()
                 .id(product.getId())
                 .name(product.getName())
