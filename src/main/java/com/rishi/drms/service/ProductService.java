@@ -4,7 +4,11 @@ import com.rishi.drms.dto.ProductRequest;
 import com.rishi.drms.dto.ProductResponse;
 import com.rishi.drms.entity.Product;
 
+import java.util.List;
+
 public interface ProductService {
 
     ProductResponse createProduct(ProductRequest product);
+
+    List<ProductResponse> getAllProducts();
 }

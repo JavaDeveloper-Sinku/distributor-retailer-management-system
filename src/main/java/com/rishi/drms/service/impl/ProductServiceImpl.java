@@ -9,6 +9,8 @@ import com.rishi.drms.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -28,5 +30,14 @@ public class ProductServiceImpl implements ProductService {
         Product savedProduct = productRepository.save(product);
 
         return ProductMapper.toResponse(savedProduct);
+    }
+
+    @Override
+    public List<ProductResponse> getAllProducts() {
+        List<Product> products = productRepository.findAll();
+
+        return products.stream()
+                .map(ProductMapper::toResponse)
+                .toList();
     }
 }
