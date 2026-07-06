@@ -59,4 +59,38 @@ public class ProductController {
         return ResponseEntity.ok(response);
 
     }
+
+    @GetMapping("/{id}")
+    public  ResponseEntity<ApiResponse<ProductResponse>> getProductById(@PathVariable Long id){
+
+        ProductResponse product = productService.getProductById(id);
+
+        ApiResponse<ProductResponse> response =
+                ApiResponse.<ProductResponse>builder()
+                        .success(true)
+                        .message("Product fetched successfully")
+                        .data(product)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<ProductResponse>> updateProduct(
+            @PathVariable Long id,
+            @Valid @RequestBody ProductRequest request) {
+
+        ProductResponse product = productService.updateProduct(id, request);
+
+        ApiResponse<ProductResponse> response =
+                ApiResponse.<ProductResponse>builder()
+                        .success(true)
+                        .message("Product updated successfully")
+                        .data(product)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
 }
