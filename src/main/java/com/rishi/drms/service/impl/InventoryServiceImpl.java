@@ -124,4 +124,38 @@ public class InventoryServiceImpl implements InventoryService {
 
         inventoryRepository.delete(inventory);
     }
+
+
+
+    @Override
+    @Transactional
+    public void reserveStock(Long productId, Integer quantity) {
+
+        Inventory inventory = inventoryRepository
+                .findByProductId(productId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Inventory not found for product id: "
+                                        + productId
+                        )
+                );
+
+        if (inventory.getAvailableStock() < quantity) {
+            throw new IllegalStateException(
+                    "Insufficient stock for product id: " + productId
+            );
+        }
+
+        inventory.setAvailableStock(
+                inventory.getAvailableStock() - quantity
+        );
+
+        inventory.setReservedStock(
+                inventory.getReservedStock() + quantity
+        );
+
+        inventory.setUpdatedAt(LocalDateTime.now());
+
+        inventoryRepository.save(inventory);
+    }
 }

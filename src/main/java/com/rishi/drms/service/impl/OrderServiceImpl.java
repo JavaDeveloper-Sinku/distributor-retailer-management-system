@@ -4,7 +4,10 @@ import com.rishi.drms.dto.request.OrderRequest;
 import com.rishi.drms.dto.response.OrderResponse;
 import com.rishi.drms.entity.Order;
 import com.rishi.drms.entity.OrderItem;
+import com.rishi.drms.event.OrderCreatedEvent;
+import com.rishi.drms.event.OrderCreatedItemEvent;
 import com.rishi.drms.exception.ResourceNotFoundException;
+import com.rishi.drms.kafka.OrderEventProducer;
 import com.rishi.drms.mapper.OrderMapper;
 import com.rishi.drms.repository.OrderRepository;
 import com.rishi.drms.service.OrderService;
@@ -23,6 +26,7 @@ import java.util.UUID;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderEventProducer orderEventProducer;
 
     @Override
     @Transactional
@@ -43,10 +47,40 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(OrderStatus.PENDING);
         order.setCreatedAt(LocalDateTime.now());
 
+        // 1. Save order in MySQL
         Order savedOrder = orderRepository.save(order);
 
+        // 2. Create Kafka event
+        OrderCreatedEvent event = new OrderCreatedEvent();
+
+        event.setOrderId(savedOrder.getId());
+        event.setOrderNumber(savedOrder.getOrderNumber());
+        event.setRetailerId(savedOrder.getRetailerId());
+
+        List<OrderCreatedItemEvent> items = savedOrder.getItems()
+                .stream()
+                .map(item -> {
+
+                    OrderCreatedItemEvent itemEvent =
+                            new OrderCreatedItemEvent();
+
+                    itemEvent.setProductId(item.getProductId());
+                    itemEvent.setQuantity(item.getQuantity());
+
+                    return itemEvent;
+                })
+                .toList();
+
+        event.setItems(items);
+
+        // 3. Publish event to Kafka
+        orderEventProducer.publishOrderCreated(event);
+
+        // 4. Return normal API response
         return OrderMapper.toResponse(savedOrder);
     }
+
+
 
     @Override
     @Transactional(readOnly = true)
