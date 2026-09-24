@@ -1,5 +1,6 @@
 package com.rishi.drms.kafka;
 
+import com.rishi.drms.event.InventoryReservedEvent;
 import com.rishi.drms.event.OrderCreatedEvent;
 import com.rishi.drms.event.OrderCreatedItemEvent;
 import com.rishi.drms.service.InventoryService;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Component;
 public class InventoryEventConsumer {
 
     private final InventoryService inventoryService;
+    private final InventoryEventProducer inventoryEventProducer;
 
     @KafkaListener(
             topics = "order-created",
@@ -30,6 +32,19 @@ public class InventoryEventConsumer {
             inventoryService.reserveStock(
                     item.getProductId(),
                     item.getQuantity()
+            );
+
+            InventoryReservedEvent reservedEvent =
+                    new InventoryReservedEvent();
+
+            reservedEvent.setOrderId(event.getOrderId());
+            reservedEvent.setOrderNumber(event.getOrderNumber());
+            reservedEvent.setRetailerId(event.getRetailerId());
+            reservedEvent.setProductId(item.getProductId());
+            reservedEvent.setQuantity(item.getQuantity());
+
+            inventoryEventProducer.publishInventoryReserved(
+                    reservedEvent
             );
         }
     }

@@ -1,6 +1,5 @@
 package com.rishi.drms.config;
 
-import com.rishi.drms.event.OrderCreatedEvent;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
@@ -17,7 +16,7 @@ import java.util.Map;
 public class KafkaProducerConfig {
 
     @Bean
-    public ProducerFactory<String, OrderCreatedEvent> producerFactory() {
+    public ProducerFactory<String, Object> producerFactory() {
 
         Map<String, Object> properties = new HashMap<>();
 
@@ -40,7 +39,7 @@ public class KafkaProducerConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate() {
+    public KafkaTemplate<String, Object> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 }
