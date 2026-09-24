@@ -1,4 +1,4 @@
-package com.rishi.drms.dto;
+package com.rishi.drms.dto.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;

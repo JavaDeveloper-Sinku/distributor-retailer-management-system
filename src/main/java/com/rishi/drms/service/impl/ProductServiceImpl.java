@@ -1,8 +1,9 @@
 package com.rishi.drms.service.impl;
 
-import com.rishi.drms.dto.ProductRequest;
-import com.rishi.drms.dto.ProductResponse;
+import com.rishi.drms.dto.request.ProductRequest;
+import com.rishi.drms.dto.response.ProductResponse;
 import com.rishi.drms.entity.Product;
+import com.rishi.drms.exception.ResourceAlreadyExistsException;
 import com.rishi.drms.exception.ResourceNotFoundException;
 import com.rishi.drms.mapper.ProductMapper;
 import com.rishi.drms.repository.ProductRepository;
@@ -19,19 +20,21 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
 
+
+
     @Override
     public ProductResponse createProduct(ProductRequest request) {
-
         if (productRepository.existsBySku(request.getSku())){
-            throw new RuntimeException("Product with sku already exists");
+            throw new ResourceAlreadyExistsException("Product with sku already exists: " + request.getSku());
         }
 
         Product product = ProductMapper.toEntity(request);
-
         Product savedProduct = productRepository.save(product);
 
         return ProductMapper.toResponse(savedProduct);
     }
+
+
 
     @Override
     public List<ProductResponse> getAllProducts() {
@@ -42,9 +45,9 @@ public class ProductServiceImpl implements ProductService {
                 .toList();
     }
 
+
     @Override
     public ProductResponse getProductById(Long id) {
-
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
@@ -56,17 +59,40 @@ public class ProductServiceImpl implements ProductService {
     public ProductResponse updateProduct(Long id, ProductRequest request) {
 
         Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Product not found with id: " + id)
+                );
 
-    product.setName(request.getName());
-    product.setSku(request.getSku());
-    product.setDescription(request.getDescription());
-    product.setPrice(request.getPrice());
-    product.setPrice(request.getPrice());
-    product.setStockQuantity(request.getStockQuantity());
+        // Check duplicate SKU only when SKU is changed
+        if (!product.getSku().equals(request.getSku())
+                && productRepository.existsBySku(request.getSku())) {
 
-    Product updatedProduct = productRepository.save(product);
+            throw new ResourceAlreadyExistsException(
+                    "Product with sku already exists: " + request.getSku()
+            );
+        }
 
-    return ProductMapper.toResponse(updatedProduct);
+        product.setName(request.getName());
+        product.setSku(request.getSku());
+        product.setDescription(request.getDescription());
+        product.setPrice(request.getPrice());
+        product.setStockQuantity(request.getStockQuantity());
+
+        Product updatedProduct = productRepository.save(product);
+
+        return ProductMapper.toResponse(updatedProduct);
+    }
+
+    @Override
+    public void deleteProduct(Long id) {
+
+        Product product = productRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "Product not found with id: " + id
+                        )
+                );
+
+        productRepository.delete(product);
     }
 }

@@ -1,7 +1,7 @@
 package com.rishi.drms.mapper;
 
-import com.rishi.drms.dto.ProductRequest;
-import com.rishi.drms.dto.ProductResponse;
+import com.rishi.drms.dto.request.ProductRequest;
+import com.rishi.drms.dto.response.ProductResponse;
 import com.rishi.drms.entity.Product;
 
 public final class ProductMapper {

@@ -2,9 +2,8 @@ package com.rishi.drms.controller;
 
 
 import com.rishi.drms.common.response.ApiResponse;
-import com.rishi.drms.dto.ProductRequest;
-import com.rishi.drms.dto.ProductResponse;
-import com.rishi.drms.entity.Product;
+import com.rishi.drms.dto.request.ProductRequest;
+import com.rishi.drms.dto.response.ProductResponse;
 import com.rishi.drms.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -88,6 +87,23 @@ public class ProductController {
                         .success(true)
                         .message("Product updated successfully")
                         .data(product)
+                        .timestamp(LocalDateTime.now())
+                        .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteProduct(
+            @PathVariable Long id) {
+
+        productService.deleteProduct(id);
+
+        ApiResponse<Void> response =
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("Product deleted successfully")
+                        .data(null)
                         .timestamp(LocalDateTime.now())
                         .build();
 

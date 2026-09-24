@@ -1,4 +1,4 @@
-package com.rishi.drms.dto;
+package com.rishi.drms.dto.response;
 
 import lombok.*;
 
